@@ -16,7 +16,7 @@ import time
 from blueking.component import shortcuts
 import base64
 from home_application.models import MonitorHost, MonitorHostData
-
+import datetime
 
 @task()
 def async_task(x, y):
@@ -70,7 +70,7 @@ def execute_task():
             if result_log["data"][0]["is_finished"]:
                 log_content = result_log["data"][0]["step_results"][0]["ip_logs"][0]["log_content"]
                 data = log_content.split("|")
-                MonitorHostData.objects.create(ip=ip, time=data[0],
+                MonitorHostData.objects.create(ip=ip, time=datetime.datetime.strptime(data[0], "%Y-%m-%d %H:%M:%S"),
                                                mem=data[1].replace("%", ""), disk=data[2].replace("%", "")
                                                , cpu=data[3].replace("%", "").replace("\n", ""))
                 return
@@ -84,6 +84,9 @@ def get_time():
     run_every=crontab(minute='*/5', hour='*', day_of_week="*")：每 5 分钟执行一次任务
     periodic_task：程序运行时自动触发周期任务
     """
-    execute_task()
-    now = datetime.datetime.now()
-    logger.error(u"celery 周期任务调用成功，当前时间：{}".format(now))
+    try:
+        execute_task()
+        now = datetime.datetime.now()
+        logger.error(u"celery 周期任务调用成功，当前时间：{}".format(now))
+    except Exception as e:
+        logger.exception(u"celery 周期任务调用失败")

@@ -3,6 +3,7 @@ import base64
 from blueking.component import shortcuts
 from common.mymako import render_json
 import time
+from common.log import logger
 
 
 def get_host_mdc(request):
@@ -34,21 +35,26 @@ echo -e "$DATE|$MEMORY|$DISK|$CPU"
             }
         ]
     }
-    result_fes = client.job.fast_execute_script(**kwargs_fes)
-    job_instance_id = result_fes["data"]["job_instance_id"]
-    # 2018-12-01 10:34:06|9.99%|5%|0.00%
+    try:
+        result_fes = client.job.fast_execute_script(**kwargs_fes)
+        job_instance_id = result_fes["data"]["job_instance_id"]
+        # 2018-12-01 10:34:06|9.99%|5%|0.00%
 
-    kwargs_log = {
-        "bk_biz_id": business_id,
-        "job_instance_id": job_instance_id
-    }
+        kwargs_log = {
+            "bk_biz_id": business_id,
+            "job_instance_id": job_instance_id
+        }
 
-    for i in xrange(30):
-        time.sleep(2)
-        result_log = client.job.get_job_instance_log(**kwargs_log)
-        if result_log["data"][0]["is_finished"]:
-            log_content = result_log["data"][0]["step_results"][0]["ip_logs"][0]["log_content"]
-            data = log_content.split("|")
-            return render_json({"result": True, "data": {"mem": data[1], "disk": data[2], "cpu": data[3].replace("\n", "")}})
+        for i in xrange(30):
+            time.sleep(2)
+            result_log = client.job.get_job_instance_log(**kwargs_log)
+            if result_log["data"][0]["is_finished"]:
+                log_content = result_log["data"][0]["step_results"][0]["ip_logs"][0]["log_content"]
+                data = log_content.split("|")
+                return render_json(
+                    {"result": True, "data": {"mem": data[1], "disk": data[2], "cpu": data[3].replace("\n", "")}})
+    except Exception as e:
+        logger.exception("get cpu disk mem data error!")
+        return render_json({"result": False, "message": "请确认执行的主机为linux操作系统"})
 
     return render_json({"result": False, "message": "脚本执行超时"})
