@@ -24,7 +24,7 @@ def search_m_host(request):
     body_data = request.body
     if not business_id:
         return render_json({"result": False, "message": "必须选择业务！"})
-    ip_list_filter = body_data.split("\n")
+    ip_list_filter = [] if body_data == "" else body_data.split("\n")
     if len(ip_list_filter) == 0:
         data = MonitorHost.objects.filter(biz_id=business_id).values()
     else:
