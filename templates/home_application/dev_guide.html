@@ -58,6 +58,7 @@
         <!-- 设置面板End -->
 
         <template id="chart_tmp">
+            <div>IP:#ip#</div>
             <div style="float: left;margin-left: 20px;" class="king-page-box">
                 <div class="king-container clearfix">
                     <div style="height: 400px; position: relative;width:900px;" id="#id#"
@@ -159,7 +160,7 @@
 
 
                     res.data.forEach(function (item) {
-                        var n_html = renderTpl(html, {id: item.id})
+                        var n_html = renderTpl(html, {id: item.id, ip: item.ip})
                         $("#chars_container").append(n_html);
                         initKendoLineChart({
                             url: '${SITE_URL}api/get_monitor_data/?business_id=' + item.biz_id + '&ip=' + item.ip,
