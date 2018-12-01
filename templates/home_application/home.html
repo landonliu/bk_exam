@@ -88,7 +88,7 @@
                 <td class="cpu">#cpu#</td>
                 <td>
                     <button biz_id="#biz_id#" ip="#ip#" class="btn btn-xs btn-success btn_check">查看</button>
-                    <button class="btn btn-xs btn-warning btn_add">添加到周期</button>
+                    <button biz_id="#biz_id#" ip="#ip#" class="btn btn-xs btn-warning btn_add">#btn_text#</button>
                 </td>
             </tr>
         </template>
@@ -139,6 +139,37 @@
                             })
 
                         });
+
+                        _html_$.find(".btn_add").click(function () {
+                            var btn_ref = $(this);
+                            var check_ip = $(this).attr("ip");
+                            var biz_id = $(this).attr("biz_id");
+                            var is_monitor = $(this).attr("is_monitor");
+                            if (is_monitor) {
+                                $.get("${SITE_URL}api/remove_host_monitor/?business_id=" + biz_id + "&ip=" + check_ip, function (res) {
+                                    if (res.result) {
+                                        alert("success!");
+                                        btn_ref.text("添加到监控");
+                                        btn_ref.attr("is_monitor", 0);
+                                    }
+                                    else {
+                                        alert(res.message);
+                                    }
+                                })
+                            } else {
+                                $.get("${SITE_URL}api/add_host_monitor/?business_id=" + biz_id + "&ip=" + check_ip, function (res) {
+                                    if (res.result) {
+                                        alert("success!");
+                                        btn_ref.text("移除监控");
+                                        btn_ref.attr("is_monitor", 1);
+                                    }
+                                    else {
+                                        alert(res.message);
+                                    }
+                                })
+                            }
+                        })
+
                     }
                     $('.ranger-box2 tbody').html(_html_$);
                     $('.ranger-box2 thead').html(renderTpl(headerTpl, res.data.catalogues));

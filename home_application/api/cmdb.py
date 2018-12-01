@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from common.mymako import render_json
 from blueking.component import shortcuts
+from home_application.models import MonitorHost
 import json
 
 
@@ -44,15 +45,20 @@ def search_host(request):
     hosts = []
     for item in result["data"]["info"]:
         host_data = item["host"]
+        ip = host_data["bk_host_innerip"]
+        is_monitor = MonitorHost.objects.filter(ip=ip, biz_id=business_id).exists()
+
         hosts.append({
             "biz_id": business_id,
-            "ip": host_data["bk_host_innerip"],
+            "ip": ip,
             "system_name": host_data["bk_os_name"],
             "host_name": host_data["bk_host_name"],
             "cloud_name": host_data["bk_cloud_id"][0]["bk_inst_name"],
             "mem": "-",
             "disk": "-",
             "cpu": "-",
+            "is_monitor": is_monitor,
+            "btn_text": "移除监控" if is_monitor else "添加到监控",
         })
 
     return_data = {
